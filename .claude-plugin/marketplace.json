@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Sherlock Engineering plugin marketplace for Claude Code",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "plugins": [
     {
       "name": "sherlock-engineering",
-      "description": "Sherlock engineering tools for Claude Code. A starter plugin with example commands and skills.",
-      "version": "1.0.0",
+      "description": "Sherlock engineering tools for Claude Code.",
+      "version": "1.0.1",
       "author": {
         "name": "Magnus Bjelkenhed",
         "email": "bjelkenhed@gmail.com"
