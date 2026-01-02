@@ -1,6 +1,6 @@
 {
   "name": "sherlock-engineering",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Sherlock engineering tools for Claude Code. A starter plugin with example commands and skills.",
   "author": {
     "name": "Magnus Bjelkenhed",

@@ -26,11 +26,19 @@ npx claude-plugins install @bjelkenhed/sherlock-engineering
 
 ### Commands
 
-- `/sherlock-engineering:hello` - A simple hello world command to get started
+- `/sherlock-engineering:architecture` - Develops a refined spec for a new feature through multiple iterations. Pass a requirements document as an argument, and the command will:
+  1. Ask clarifying questions to reduce ambiguity
+  2. Fetch relevant documentation using the Docs Fetcher sub-agent
+  3. Create an initial spec using the Application Architect sub-agent
+  4. Refine the spec through Code Reviewer feedback
+  5. Iterate through three spec versions with reviews
+  6. Notify you when the final spec is ready for review
 
-### Skills
+### Agents
 
-- `hello-world` - A basic skill demonstrating how to create Claude Code skills
+- `code-reviewer` - Reviews code for quality and best practices
+- `docs-fetcher-summarizer` - Fetches and summarizes documentation from external sources
+- `meta-agent` - Generates new Claude Code sub-agent configurations
 
 ## Project Structure
 
