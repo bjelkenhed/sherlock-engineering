@@ -26,7 +26,7 @@ So for example, if the requirements document is `/docs/requirements/260106-01-co
 
 ### 4. Refine the spec
 
-Pass the first iteration of the spec to the DHH Code Reviewer sub-agent to refine it. Require the dhh-code-reviewer to write all its comments in a file named `YYMMDD-XXz-spec-headline-feedback.md` in the /docs/plans/ folder. So for example, if the requirements document is `/docs/requirements/260106-01-component.md`, the first iteration of the spec should be called `/docs/plans/260106-01-component.md`, and the dhh-code-reviewer's comments should be written to `/docs/plans/260106-01a-component-feedback.md`.
+Pass the first iteration of the spec to the Code Reviewer sub-agent to refine it. Require the Code Reviewer to write all its comments in a file named `YYMMDD-XXz-spec-headline-feedback.md` in the /docs/plans/ folder. So for example, if the requirements document is `/docs/requirements/260106-01-component.md`, the first iteration of the spec should be called `/docs/plans/260106-01-component.md`, and the code-reviewer's comments should be written to `/docs/plans/260106-01a-component-feedback.md`.
 
 Check whether the Code Reviewer actually saved its comments in the specified file. If it didn't, save whatever it returned to you in the specified file.
 
@@ -48,4 +48,4 @@ Repeat the Application Architect process for the third iteration of the spec.
 
 The user will want to review the spec in detail before proceeding to implementation.
 
-In your notification, summarise the key, final components of the spec at a very high level (3 paragraphs max), and also summarise the key changes that were made thanks to DHH's suggestions (also 3 paragraphs max). Use paragraphs rather than bulletpoints.
+In your notification, summarise the key, final components of the spec at a very high level (3 paragraphs max), and also summarise the key changes that were made thanks to Code Reviewer's suggestions (also 3 paragraphs max). Use paragraphs rather than bulletpoints.
