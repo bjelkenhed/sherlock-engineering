@@ -1,0 +1,19 @@
+{
+  "name": "sherlock-engineering",
+  "version": "1.0.0",
+  "description": "Sherlock engineering tools for Claude Code. A starter plugin with example commands and skills.",
+  "author": {
+    "name": "Magnus Bjelkenhed",
+    "email": "bjelkenhed@gmail.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/bjelkenhed/sherlock-engineering",
+  "repository": "https://github.com/bjelkenhed/sherlock-engineering",
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "engineering",
+    "productivity",
+    "workflow"
+  ]
+}

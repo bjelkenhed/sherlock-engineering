@@ -1,0 +1,29 @@
+{
+  "name": "sherlock-marketplace",
+  "owner": {
+    "name": "Sherlock",
+    "url": "https://github.com/bjelkenhed"
+  },
+  "metadata": {
+    "description": "Sherlock Engineering plugin marketplace for Claude Code",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "sherlock-engineering",
+      "description": "Sherlock engineering tools for Claude Code. A starter plugin with example commands and skills.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Magnus Bjelkenhed",
+        "email": "bjelkenhed@gmail.com"
+      },
+      "homepage": "https://github.com/bjelkenhed/sherlock-engineering",
+      "tags": [
+        "engineering",
+        "productivity",
+        "workflow"
+      ],
+      "source": "./plugins/sherlock-engineering"
+    }
+  ]
+}
