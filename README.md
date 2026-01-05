@@ -26,13 +26,33 @@ npx claude-plugins install @bjelkenhed/sherlock-engineering
 
 ### Commands
 
-- `/sherlock-engineering:architecture` - Develops a refined spec for a new feature through multiple iterations. Pass a requirements document as an argument, and the command will:
+- `/sherlock-engineering:plan` - Develops a refined spec for a new feature through multiple iterations. Pass a requirements document as an argument, and the command will:
   1. Ask clarifying questions to reduce ambiguity
   2. Fetch relevant documentation using the Docs Fetcher sub-agent
   3. Create an initial spec using the Application Architect sub-agent
   4. Refine the spec through Code Reviewer feedback
   5. Iterate through three spec versions with reviews
   6. Notify you when the final spec is ready for review
+
+- `/sherlock-engineering:ralph-loop` - Start an iterative development loop (based on [Ralph Wiggum](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum)). The loop feeds the same prompt back when Claude tries to exit, allowing autonomous iteration until completion criteria are met.
+
+  **Usage:**
+  ```
+  /ralph-loop "<prompt>" --max-iterations <n> --completion-promise "<text>"
+  ```
+
+  **Options:**
+  - `--max-iterations <n>` - Stop after N iterations (default: unlimited)
+  - `--completion-promise <text>` - Phrase that signals completion
+
+  **Example:**
+  ```
+  /ralph-loop "Build a REST API for todos. Requirements: CRUD operations, input validation, tests. Output <promise>COMPLETE</promise> when done." --completion-promise "COMPLETE" --max-iterations 50
+  ```
+
+  **Best for:** Tasks with clear success criteria, TDD workflows, greenfield projects, tasks with automatic verification (tests, linters).
+
+- `/sherlock-engineering:cancel-ralph` - Cancel the active Ralph Wiggum loop
 
 ### Agents
 
