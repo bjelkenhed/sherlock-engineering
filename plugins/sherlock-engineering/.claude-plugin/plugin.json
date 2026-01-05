@@ -1,7 +1,7 @@
 {
   "name": "sherlock-engineering",
-  "version": "1.0.3",
-  "description": "Sherlock engineering tools for Claude Code. A starter plugin with example commands and skills.",
+  "version": "1.0.4",
+  "description": "Sherlock engineering tools for Claude Code.",
   "author": {
     "name": "Magnus Bjelkenhed",
     "email": "bjelkenhed@gmail.com"
