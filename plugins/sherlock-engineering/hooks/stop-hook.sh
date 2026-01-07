@@ -23,6 +23,8 @@ ITERATION=$(echo "$FRONTMATTER" | grep '^iteration:' | sed 's/iteration: *//')
 MAX_ITERATIONS=$(echo "$FRONTMATTER" | grep '^max_iterations:' | sed 's/max_iterations: *//')
 # Extract completion_promise and strip surrounding quotes if present
 COMPLETION_PROMISE=$(echo "$FRONTMATTER" | grep '^completion_promise:' | sed 's/completion_promise: *//' | sed 's/^"\(.*\)"$/\1/')
+# Extract prd_file and strip surrounding quotes if present
+PRD_FILE=$(echo "$FRONTMATTER" | grep '^prd_file:' | sed 's/prd_file: *//' | sed 's/^"\(.*\)"$/\1/')
 
 # Validate numeric fields before arithmetic operations
 if [[ ! "$ITERATION" =~ ^[0-9]+$ ]]; then
@@ -52,6 +54,23 @@ if [[ $MAX_ITERATIONS -gt 0 ]] && [[ $ITERATION -ge $MAX_ITERATIONS ]]; then
   echo "🛑 Ralph loop: Max iterations ($MAX_ITERATIONS) reached."
   rm "$RALPH_STATE_FILE"
   exit 0
+fi
+
+# Check PRD status if PRD file is set
+PRD_STATUS=""
+PRD_TOTAL=0
+PRD_PASSING=0
+if [[ -n "$PRD_FILE" ]] && [[ "$PRD_FILE" != "null" ]] && [[ -f "$PRD_FILE" ]]; then
+  PRD_TOTAL=$(jq '.features | length' "$PRD_FILE" 2>/dev/null || echo "0")
+  PRD_PASSING=$(jq '[.features[] | select(.passes == true)] | length' "$PRD_FILE" 2>/dev/null || echo "0")
+  PRD_STATUS="PRD: $PRD_PASSING/$PRD_TOTAL"
+
+  # Auto-complete if all features pass
+  if [[ "$PRD_TOTAL" -gt 0 ]] && [[ "$PRD_PASSING" -eq "$PRD_TOTAL" ]]; then
+    echo "✅ Ralph loop: All PRD features pass! ($PRD_PASSING/$PRD_TOTAL)"
+    rm "$RALPH_STATE_FILE"
+    exit 0
+  fi
 fi
 
 # Get transcript path from hook input
@@ -155,11 +174,19 @@ TEMP_FILE="${RALPH_STATE_FILE}.tmp.$$"
 sed "s/^iteration: .*/iteration: $NEXT_ITERATION/" "$RALPH_STATE_FILE" > "$TEMP_FILE"
 mv "$TEMP_FILE" "$RALPH_STATE_FILE"
 
-# Build system message with iteration count and completion promise info
+# Build system message with iteration count, PRD status, and completion promise info
+SYSTEM_MSG="🔄 Ralph iteration $NEXT_ITERATION"
+
+# Add PRD status if available
+if [[ -n "$PRD_STATUS" ]]; then
+  SYSTEM_MSG="$SYSTEM_MSG | $PRD_STATUS"
+fi
+
+# Add completion promise info
 if [[ "$COMPLETION_PROMISE" != "null" ]] && [[ -n "$COMPLETION_PROMISE" ]]; then
-  SYSTEM_MSG="🔄 Ralph iteration $NEXT_ITERATION | To stop: output <promise>$COMPLETION_PROMISE</promise> (ONLY when statement is TRUE - do not lie to exit!)"
+  SYSTEM_MSG="$SYSTEM_MSG | To stop: <promise>$COMPLETION_PROMISE</promise> (ONLY when TRUE)"
 else
-  SYSTEM_MSG="🔄 Ralph iteration $NEXT_ITERATION | No completion promise set - loop runs infinitely"
+  SYSTEM_MSG="$SYSTEM_MSG | No completion promise - loop runs until PRD complete or max iterations"
 fi
 
 # Output JSON to block the stop and feed prompt back

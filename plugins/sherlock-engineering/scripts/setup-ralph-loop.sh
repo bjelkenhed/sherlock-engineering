@@ -9,6 +9,7 @@ set -euo pipefail
 PROMPT_PARTS=()
 MAX_ITERATIONS=0
 COMPLETION_PROMISE="null"
+PRD_FILE="auto"  # auto, explicit path, or NONE
 
 # Parse options and positional arguments
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,7 @@ ARGUMENTS:
 OPTIONS:
   --max-iterations <n>           Maximum iterations before auto-stop (default: unlimited)
   --completion-promise '<text>'  Promise phrase (USE QUOTES for multi-word)
+  --prd <file|NONE>              PRD file path (default: auto-detect ./plans/prd.json)
   -h, --help                     Show this help message
 
 DESCRIPTION:
@@ -44,6 +46,8 @@ EXAMPLES:
   /ralph-loop --max-iterations 10 Fix the auth bug
   /ralph-loop Refactor cache layer  (runs forever)
   /ralph-loop --completion-promise 'TASK COMPLETE' Create a REST API
+  /ralph-loop --prd ./plans/prd.json  (use PRD with default prompt)
+  /ralph-loop --prd NONE Build API  (disable PRD auto-detection)
 
 STOPPING:
   Only by reaching --max-iterations or detecting --completion-promise
@@ -101,6 +105,21 @@ HELP_EOF
       COMPLETION_PROMISE="$2"
       shift 2
       ;;
+    --prd)
+      if [[ -z "${2:-}" ]]; then
+        echo "❌ Error: --prd requires a file path or 'NONE'" >&2
+        echo "" >&2
+        echo "   Valid examples:" >&2
+        echo "     --prd ./plans/prd.json" >&2
+        echo "     --prd /absolute/path/to/prd.json" >&2
+        echo "     --prd NONE  (disable auto-detection)" >&2
+        echo "" >&2
+        echo "   Default: auto-detect ./plans/prd.json" >&2
+        exit 1
+      fi
+      PRD_FILE="$2"
+      shift 2
+      ;;
     *)
       # Non-option argument - collect all as prompt parts
       PROMPT_PARTS+=("$1")
@@ -112,6 +131,29 @@ done
 # Join all prompt parts with spaces
 PROMPT="${PROMPT_PARTS[*]}"
 
+# Handle PRD auto-detection
+RESOLVED_PRD_FILE=""
+if [[ "$PRD_FILE" == "auto" ]]; then
+  if [[ -f "./plans/prd.json" ]]; then
+    RESOLVED_PRD_FILE="./plans/prd.json"
+  fi
+elif [[ "$PRD_FILE" != "NONE" ]] && [[ -n "$PRD_FILE" ]]; then
+  if [[ -f "$PRD_FILE" ]]; then
+    RESOLVED_PRD_FILE="$PRD_FILE"
+  else
+    echo "❌ Error: PRD file not found: $PRD_FILE" >&2
+    exit 1
+  fi
+fi
+
+# If PRD exists and no prompt provided, use default prompt and completion promise
+if [[ -n "$RESOLVED_PRD_FILE" ]] && [[ -z "$PROMPT" ]]; then
+  PROMPT="Implement features from the PRD file at $RESOLVED_PRD_FILE"
+  if [[ "$COMPLETION_PROMISE" == "null" ]]; then
+    COMPLETION_PROMISE="COMPLETE"
+  fi
+fi
+
 # Validate prompt is non-empty
 if [[ -z "$PROMPT" ]]; then
   echo "❌ Error: No prompt provided" >&2
@@ -122,6 +164,7 @@ if [[ -z "$PROMPT" ]]; then
   echo "     /ralph-loop Build a REST API for todos" >&2
   echo "     /ralph-loop Fix the auth bug --max-iterations 20" >&2
   echo "     /ralph-loop --completion-promise 'DONE' Refactor code" >&2
+  echo "     /ralph-loop  (auto-uses ./plans/prd.json if it exists)" >&2
   echo "" >&2
   echo "   For all options: /ralph-loop --help" >&2
   exit 1
@@ -137,17 +180,37 @@ else
   COMPLETION_PROMISE_YAML="null"
 fi
 
+# Quote PRD file for YAML
+if [[ -n "$RESOLVED_PRD_FILE" ]]; then
+  PRD_FILE_YAML="\"$RESOLVED_PRD_FILE\""
+else
+  PRD_FILE_YAML="null"
+fi
+
 cat > .claude/ralph-loop.local.md <<EOF
 ---
 active: true
 iteration: 1
 max_iterations: $MAX_ITERATIONS
 completion_promise: $COMPLETION_PROMISE_YAML
+prd_file: $PRD_FILE_YAML
 started_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ---
 
 $PROMPT
 EOF
+
+# Get PRD status if available
+PRD_STATUS_MSG=""
+if [[ -n "$RESOLVED_PRD_FILE" ]]; then
+  if command -v jq &> /dev/null; then
+    TOTAL=$(jq '.features | length' "$RESOLVED_PRD_FILE" 2>/dev/null || echo "?")
+    PASSING=$(jq '[.features[] | select(.passes == true)] | length' "$RESOLVED_PRD_FILE" 2>/dev/null || echo "0")
+    PRD_STATUS_MSG="PRD: $RESOLVED_PRD_FILE ($PASSING/$TOTAL features passing)"
+  else
+    PRD_STATUS_MSG="PRD: $RESOLVED_PRD_FILE (jq not installed - cannot count features)"
+  fi
+fi
 
 # Output setup message
 cat <<EOF
@@ -156,6 +219,7 @@ cat <<EOF
 Iteration: 1
 Max iterations: $(if [[ $MAX_ITERATIONS -gt 0 ]]; then echo $MAX_ITERATIONS; else echo "unlimited"; fi)
 Completion promise: $(if [[ "$COMPLETION_PROMISE" != "null" ]]; then echo "${COMPLETION_PROMISE//\"/} (ONLY output when TRUE - do not lie!)"; else echo "none (runs forever)"; fi)
+$(if [[ -n "$PRD_STATUS_MSG" ]]; then echo "$PRD_STATUS_MSG"; fi)
 
 The stop hook is now active. When you try to exit, the SAME PROMPT will be
 fed back to you. You'll see your previous work in files, creating a
