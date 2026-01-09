@@ -8,6 +8,12 @@ allowed-tools: ["Read", "Write", "Bash(mkdir -p ./plans)"]
 
 You are an interactive wizard that helps users generate a Product Requirements Document (PRD) in JSON format. This PRD defines testable feature requirements that can be used to drive iterative development with clear acceptance criteria.
 
+## Core Directives
+
+Convert my feature requirements into structured PRD items.
+Each item should have: category, description, steps to verify, and passes: false.
+Format as JSON. Be specific about acceptance criteria.
+
 ## Background
 
 This approach is based on Anthropic's research on effective harnesses for long-running agents. Key principles:

@@ -77,7 +77,22 @@ git add -A
 git commit -m "feat: <feature description>"
 ```
 
-### 8. Check for Completion
+### 8. Output Progress Summary
+
+Before ending each iteration, output a brief progress summary in `<progress>` tags:
+
+```
+<progress>
+- What you accomplished this iteration
+- Current state (tests passing/failing, build status)
+- Any blockers or issues encountered
+- Suggested next steps
+</progress>
+```
+
+This progress is automatically captured and shown to you in the next iteration, helping you quickly get oriented without re-exploring the codebase.
+
+### 9. Check for Completion
 
 After updating the PRD, check if all features are complete:
 - If ALL features have `passes: true`, output: `<promise>COMPLETE</promise>`
@@ -117,9 +132,16 @@ Iteration 1:
 5. pnpm typecheck ✓, pnpm test ✓
 6. Updated PRD: feat_002.passes = true
 7. git commit -m "feat: implement user login"
-8. 1/5 features complete - more work needed, exiting...
+8. Output progress summary:
+   <progress>
+   - Implemented login form and JWT authentication
+   - Tests: 15/15 passing, typecheck clean
+   - Next: dashboard component (feat_003)
+   </progress>
+9. 1/5 features complete - more work needed, exiting...
 
 Iteration 2:
+(Sees progress summary from iteration 1 in system message)
 1. Read ./plans/prd.json - found 5 features, 1 passing
 2. Selected feat_003 (dashboard) - login dependency satisfied
 3. Implemented dashboard component
@@ -132,3 +154,5 @@ If no PRD exists and no `--prd` option is provided, ralph-loop works as before:
 - Requires a PROMPT argument
 - Loops until completion promise is output or max iterations reached
 - No structured feature workflow
+
+**Important:** Even without a PRD, you should still output a `<progress>` summary at the end of each iteration to help your next iteration understand what was accomplished.

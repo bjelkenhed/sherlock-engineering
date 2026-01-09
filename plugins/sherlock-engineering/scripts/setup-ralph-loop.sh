@@ -59,6 +59,9 @@ MONITORING:
 
   # View full state:
   head -10 .claude/ralph-loop.local.md
+
+  # View progress log:
+  cat .claude/ralph-progress.txt
 HELP_EOF
       exit 0
       ;;
@@ -173,19 +176,24 @@ fi
 # Create state file for stop hook (markdown with YAML frontmatter)
 mkdir -p .claude
 
-# Quote completion promise for YAML if it contains special chars or is not null
-if [[ -n "$COMPLETION_PROMISE" ]] && [[ "$COMPLETION_PROMISE" != "null" ]]; then
-  COMPLETION_PROMISE_YAML="\"$COMPLETION_PROMISE\""
-else
-  COMPLETION_PROMISE_YAML="null"
-fi
+# Helper function to escape strings for YAML
+yaml_escape_string() {
+  local value="$1"
+  if [[ -z "$value" ]] || [[ "$value" == "null" ]]; then
+    echo "null"
+    return
+  fi
+  # Escape backslashes first, then double quotes
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  printf '"%s"' "$value"
+}
 
-# Quote PRD file for YAML
-if [[ -n "$RESOLVED_PRD_FILE" ]]; then
-  PRD_FILE_YAML="\"$RESOLVED_PRD_FILE\""
-else
-  PRD_FILE_YAML="null"
-fi
+# Quote completion promise for YAML with proper escaping
+COMPLETION_PROMISE_YAML=$(yaml_escape_string "$COMPLETION_PROMISE")
+
+# Quote PRD file for YAML with proper escaping
+PRD_FILE_YAML=$(yaml_escape_string "$RESOLVED_PRD_FILE")
 
 cat > .claude/ralph-loop.local.md <<EOF
 ---
@@ -199,6 +207,9 @@ started_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 $PROMPT
 EOF
+
+# Initialize empty progress file for tracking accomplishments across iterations
+touch .claude/ralph-progress.txt
 
 # Get PRD status if available
 PRD_STATUS_MSG=""
@@ -226,6 +237,7 @@ fed back to you. You'll see your previous work in files, creating a
 self-referential loop where you iteratively improve on the same task.
 
 To monitor: head -10 .claude/ralph-loop.local.md
+To view progress: cat .claude/ralph-progress.txt
 
 ⚠️  WARNING: This loop cannot be stopped manually! It will run infinitely
     unless you set --max-iterations or --completion-promise.
