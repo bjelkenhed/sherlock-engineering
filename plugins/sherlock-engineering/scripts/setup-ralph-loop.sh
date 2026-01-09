@@ -131,8 +131,8 @@ HELP_EOF
   esac
 done
 
-# Join all prompt parts with spaces
-PROMPT="${PROMPT_PARTS[*]}"
+# Join all prompt parts with spaces (handle empty array with set -u)
+PROMPT="${PROMPT_PARTS[*]:-}"
 
 # Handle PRD auto-detection
 RESOLVED_PRD_FILE=""
